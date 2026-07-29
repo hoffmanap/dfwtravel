@@ -11,25 +11,25 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap');
 
 :root{
-  --bg: #090d15;
-  --bg-panel: #121a2a;
-  --bg-panel-alt: #17203350;
-  --border: #263250;
-  --border-soft: #1b2436;
-  --text: #eaeef6;
-  --text-muted: #8a97ae;
-  --text-faint: #56637c;
-  --amber: #f5a623;
-  --amber-dim: #f5a62333;
-  --cyan: #45c9d8;
-  --cyan-dim: #45c9d833;
-  --grey-line: #3a475f;
+  --bg: #f4f2ec;
+  --bg-panel: #ffffff;
+  --bg-panel-alt: #faf8f350;
+  --border: #ded8c8;
+  --border-soft: #e7e2d6;
+  --text: #211d17;
+  --text-muted: #6b6656;
+  --text-faint: #948e7a;
+  --amber: #c6791a;
+  --amber-dim: #c6791a1f;
+  --cyan: #1c8a96;
+  --cyan-dim: #1c8a961f;
+  --grey-line: #b9b09a;
 }
 
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
-  background: radial-gradient(ellipse 1200px 700px at 15% -10%, #131d33 0%, var(--bg) 55%), var(--bg);
+  background: radial-gradient(ellipse 1200px 700px at 15% -10%, #fbf7ee 0%, var(--bg) 55%), var(--bg);
   color: var(--text);
   font-family:'Inter', sans-serif;
   line-height:1.5;
@@ -61,13 +61,13 @@ header.hero{
 .beacon{
   width:8px;height:8px;border-radius:50%;
   background:var(--amber);
-  box-shadow:0 0 0 0 rgba(245,166,35,.6);
+  box-shadow:0 0 0 0 rgba(198,121,26,.45);
   animation:pulse 2.2s infinite;
 }
 @keyframes pulse{
-  0%{box-shadow:0 0 0 0 rgba(245,166,35,.55);}
-  70%{box-shadow:0 0 0 9px rgba(245,166,35,0);}
-  100%{box-shadow:0 0 0 0 rgba(245,166,35,0);}
+  0%{box-shadow:0 0 0 0 rgba(198,121,26,.4);}
+  70%{box-shadow:0 0 0 9px rgba(198,121,26,0);}
+  100%{box-shadow:0 0 0 0 rgba(198,121,26,0);}
 }
 h1.display{
   font-size:clamp(30px, 4.6vw, 50px);
@@ -105,9 +105,9 @@ h1.display span{color:var(--amber);}
   font-size:30px;
   font-weight:600;
   color:var(--amber);
-  text-shadow:0 0 18px rgba(245,166,35,.25);
+  text-shadow:0 0 18px rgba(198,121,26,.18);
 }
-.board .cell .num.cyan{color:var(--cyan); text-shadow:0 0 18px rgba(69,201,216,.25);}
+.board .cell .num.cyan{color:var(--cyan); text-shadow:0 0 18px rgba(28,138,150,.18);}
 .board .cell .lbl{
   margin-top:6px;
   font-size:12px;
@@ -166,7 +166,7 @@ h2.display{
 /* ---------- MAP LAYOUT ---------- */
 .map-layout{
   display:grid;
-  grid-template-columns:1.55fr 1fr;
+  grid-template-columns:2.3fr 1fr;
   gap:20px;
   align-items:stretch;
 }
@@ -179,18 +179,32 @@ h2.display{
   overflow:hidden;
   position:relative;
 }
-#map{height:560px; width:100%; background:#0c1220;}
+.fs-btn{
+  position:absolute; top:14px; right:14px; z-index:600;
+  width:36px; height:36px; border-radius:8px;
+  background:#fffdf8ee; border:1px solid var(--border);
+  color:var(--text-muted);
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; backdrop-filter:blur(3px);
+  transition:color .15s, border-color .15s;
+}
+.fs-btn:hover{color:var(--amber); border-color:var(--amber);}
+.map-panel:fullscreen{border-radius:0;}
+.map-panel:fullscreen #map{height:100vh;}
+.map-panel:-webkit-full-screen{border-radius:0;}
+.map-panel:-webkit-full-screen #map{height:100vh;}
+#map{height:680px; width:100%; background:#efece3;}
 
 .legend{
   position:absolute; bottom:14px; left:14px; z-index:500;
-  background:#0c1220dd; border:1px solid var(--border);
+  background:#fffdf8ee; border:1px solid var(--border);
   border-radius:8px; padding:10px 12px;
   font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-muted);
   backdrop-filter:blur(3px);
 }
 .legend .ramp{
   width:130px; height:8px; border-radius:4px; margin:6px 0;
-  background:linear-gradient(90deg,#152036,#3a3350,#8a5a2e,#f5a623);
+  background:linear-gradient(90deg,#c9c2ae,#b08448,#682c0e,#38160a);
 }
 .legend .ramp-labels{display:flex; justify-content:space-between; font-size:10px; color:var(--text-faint);}
 
@@ -200,7 +214,7 @@ h2.display{
   border-radius:12px;
   padding:18px 18px 8px;
   display:flex; flex-direction:column;
-  max-height:560px;
+  max-height:680px;
 }
 .rank-panel h3{
   font-family:'IBM Plex Mono',monospace; font-size:12px; text-transform:uppercase;
@@ -222,14 +236,22 @@ h2.display{
 .rank-row .n{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--text-faint);}
 .rank-row .city{font-size:13.5px; transition:color .15s;}
 .rank-row .barwrap{grid-column:2/4; height:5px; background:var(--border-soft); border-radius:3px; margin-top:5px; overflow:hidden;}
-.rank-row .bar{height:100%; background:linear-gradient(90deg,var(--amber),#ffcf7a);}
+.rank-row .bar{height:100%; background:linear-gradient(90deg,var(--amber),#e9b463);}
 .rank-row .pct{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-muted); text-align:right;}
 
 /* popup */
 .leaflet-popup-content-wrapper{
-  background:#101827; color:var(--text); border:1px solid var(--border); border-radius:10px;
+  background:#ffffff; color:var(--text); border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 8px 24px rgba(40,30,10,.14);
 }
-.leaflet-popup-tip{background:#101827;}
+.leaflet-popup-tip{background:#ffffff;}
+.leaflet-tooltip.city-tooltip{
+  background:#ffffff; color:var(--text); border:1px solid var(--border); border-radius:10px;
+  box-shadow:0 6px 18px rgba(40,30,10,.16);
+  padding:10px 12px;
+  opacity:0.98;
+}
+.leaflet-tooltip.city-tooltip::before{border-top-color:#ffffff;}
 .popup-city{font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:15px; margin-bottom:6px;}
 .popup-row{display:flex; justify-content:space-between; font-size:12.5px; color:var(--text-muted); font-family:'IBM Plex Mono',monospace; margin:2px 0;}
 .popup-row b{color:var(--text);}
@@ -305,8 +327,11 @@ footer a{color:var(--text-muted);}
     </div>
 
     <div class="map-layout">
-      <div class="map-panel">
+      <div class="map-panel" id="mapPanel">
         <div id="map"></div>
+        <button class="fs-btn" id="fsBtn" title="Expand map to full screen" aria-label="Toggle full screen map">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/></svg>
+        </button>
         <div class="legend">
           <div>Share of visits</div>
           <div class="ramp"></div>
@@ -391,14 +416,14 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
 
   // ---- color scale ----
   function colorFor(v, maxV){
-    if(!v || v <= 0) return '#141d2f';
+    if(!v || v <= 0) return '#c9c2ae';
     const t = Math.pow(v / maxV, 0.42); // perceptual boost for long tail
-    // interpolate deep navy -> plum -> amber
+    // interpolate muted tan -> amber-brown -> deep terracotta -> near-black espresso
     const stops = [
-      [0.00, [21,32,54]],
-      [0.35, [58,51,80]],
-      [0.65, [138,90,46]],
-      [1.00, [245,166,35]],
+      [0.00, [176,132,72]],
+      [0.35, [150,84,32]],
+      [0.65, [104,44,14]],
+      [1.00, [56,22,10]],
     ];
     let a = stops[0], b = stops[stops.length-1];
     for(let i=0;i<stops.length-1;i++){
@@ -413,8 +438,9 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
   // ---- map init ----
   const map = L.map('map', {scrollWheelZoom:true, zoomControl:true, attributionControl:true})
     .setView([32.79, -97.0], 9);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution:'&copy; OpenStreetMap &copy; CARTO',
+    subdomains:'abcd',
     maxZoom:18
   }).addTo(map);
 
@@ -428,9 +454,9 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
     return {
       fillColor: colorFor(v, maxV),
       weight: 1,
-      opacity: 1,
-      color: '#0c1220',
-      fillOpacity: c ? 0.88 : 0.25
+      opacity: 0.55,
+      color: '#3a2a18',
+      fillOpacity: c ? 0.52 : 0.10
     };
   }
 
@@ -456,13 +482,34 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
       style: styleFeature,
       onEachFeature: (feature, layer) => {
         layer.bindPopup(popupHtml(feature.properties.CITY));
-        layer.on('mouseover', () => layer.setStyle({weight:2, color:'#f5a623'}));
+        layer.bindTooltip(popupHtml(feature.properties.CITY), {
+          sticky: true,
+          direction: 'top',
+          className: 'city-tooltip'
+        });
+        layer.on('mouseover', () => layer.setStyle({weight:2.5, color:'#1a1006', opacity:0.95, fillOpacity: Math.min(0.85, (layer.options.fillOpacity||0.52) + 0.18)}));
         layer.on('mouseout', () => geoLayer.resetStyle(layer));
       }
     }).addTo(map);
   }
 
   renderMap();
+
+  // ---- fullscreen toggle ----
+  const mapPanel = document.getElementById('mapPanel');
+  const fsBtn = document.getElementById('fsBtn');
+  function isFullscreen(){
+    return document.fullscreenElement === mapPanel || document.webkitFullscreenElement === mapPanel;
+  }
+  fsBtn.addEventListener('click', () => {
+    if(!isFullscreen()){
+      (mapPanel.requestFullscreen || mapPanel.webkitRequestFullscreen).call(mapPanel);
+    } else {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    }
+  });
+  document.addEventListener('fullscreenchange', () => setTimeout(() => map.invalidateSize(), 60));
+  document.addEventListener('webkitfullscreenchange', () => setTimeout(() => map.invalidateSize(), 60));
 
   // ---- rank list ----
   function renderRankList(){
@@ -518,9 +565,9 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
   });
 
   // ---- charts ----
-  Chart.defaults.color = '#8a97ae';
+  Chart.defaults.color = '#6b6656';
   Chart.defaults.font.family = "'IBM Plex Mono', monospace";
-  Chart.defaults.borderColor = '#1b2436';
+  Chart.defaults.borderColor = '#e7e2d6';
 
   const months = DATA.monthly.map(m => m.month);
   new Chart(document.getElementById('monthlyChart'), {
@@ -531,13 +578,13 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
         {
           label:'DFW Airport',
           data: DATA.monthly.map(m => m.dfw),
-          borderColor:'#f5a623', backgroundColor:'#f5a62322',
+          borderColor:'#c6791a', backgroundColor:'#c6791a26',
           fill:true, tension:.3, pointRadius:0, borderWidth:2
         },
         {
           label:'Dallas Love Field',
           data: DATA.monthly.map(m => m.love),
-          borderColor:'#45c9d8', backgroundColor:'#45c9d822',
+          borderColor:'#1c8a96', backgroundColor:'#1c8a9626',
           fill:true, tension:.3, pointRadius:0, borderWidth:2
         }
       ]
@@ -547,8 +594,8 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
       interaction:{mode:'index', intersect:false},
       plugins:{legend:{labels:{boxWidth:10, font:{size:11}}}},
       scales:{
-        x:{ticks:{maxRotation:0, autoSkip:true, maxTicksLimit:9, font:{size:10}}, grid:{color:'#1b2436'}},
-        y:{grid:{color:'#1b2436'}, ticks:{font:{size:10}}}
+        x:{ticks:{maxRotation:0, autoSkip:true, maxTicksLimit:9, font:{size:10}}, grid:{color:'#e7e2d6'}},
+        y:{grid:{color:'#e7e2d6'}, ticks:{font:{size:10}}}
       }
     }
   });
@@ -558,8 +605,8 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
     data:{
       labels: DATA.dow.map(d => d.day.slice(0,3)),
       datasets:[
-        {label:'DFW Airport', data: DATA.dow.map(d=>d.dfw), backgroundColor:'#f5a623cc', borderRadius:3},
-        {label:'Dallas Love Field', data: DATA.dow.map(d=>d.love), backgroundColor:'#45c9d8cc', borderRadius:3},
+        {label:'DFW Airport', data: DATA.dow.map(d=>d.dfw), backgroundColor:'#c6791acc', borderRadius:3},
+        {label:'Dallas Love Field', data: DATA.dow.map(d=>d.love), backgroundColor:'#1c8a96cc', borderRadius:3},
       ]
     },
     options:{
@@ -567,7 +614,7 @@ const DATA = {"meta":{"total_visits":22210,"unique_devices":7402,"el_paso_flagge
       plugins:{legend:{labels:{boxWidth:10, font:{size:11}}}},
       scales:{
         x:{stacked:true, grid:{display:false}, ticks:{font:{size:11}}},
-        y:{stacked:true, grid:{color:'#1b2436'}, ticks:{font:{size:10}}}
+        y:{stacked:true, grid:{color:'#e7e2d6'}, ticks:{font:{size:10}}}
       }
     }
   });
