@@ -1,264 +1,278 @@
 """
-DFW Metro Destination Analysis for El Paso-Based Travelers
+Metro Destination Analysis (config-driven)
 ============================================================
+Traces devices whose home location is in a given origin metro (e.g. a home
+city or metro area) through arrivals at one or more named airports, then
+follows each device for a configurable window (default 24 hours) and
+spatially joins its subsequent pings against a set of municipality
+boundaries to see where those travelers actually go.
 
-WHAT THIS SCRIPT DOES
-----------------------
-1. Loads the "visitor home" panel (`visitor_home.tsv`) and flags devices whose
-   common-evening (home) location is El Paso, TX.
-2. Loads the "pathing" panel (`pathing.tsv`) and keeps only records belonging
-   to those El Paso-based devices (joined on device id).
-3. Within the pathing data, finds each device's arrival event at one of the
-   three DFW-area airports:
-       - DFW International Airport (all terminal-specific polygons combined)
-       - Dallas Love Field
-       - McKinney National Airport
-4. For each such arrival, looks at every other pathing ping from that same
-   device in the following 24 hours and spatially joins it against the DFW
-   metro municipality boundaries (Cities_Region__2025_.geojson) to figure out
-   which city/town the traveler visited.
-5. De-duplicates so a device visiting the same municipality multiple times on
-   the same local date only counts once (prevents a device that pings 10x in
-   one afternoon in Frisco from being counted as 10 "visits").
-6. Aggregates counts of unique device-visits by municipality, with an
-   optional filter on which origin airport to include.
+This script itself never changes between runs -- everything that differs
+from one analysis to the next (which metro, which airports, which files)
+lives in `config.json`. To re-run for a new metro area:
 
-REQUIRED INPUT FILES (place these next to this script)
---------------------------------------------------------
-1. visitor_home.tsv   -- rename your visitor-home export to this exact name.
-   Expected columns (tab-separated), based on the sample you shared:
-     Hashed Ubermedia Id, Polygon Name, Visit Timestamp,
-     Common Evening Lat, Common Evening Long, Common Evening Country,
-     Common Evening State, Common Evening Postal, Common Evening Census,
-     Common Evening Metro, Date, Time, Day of Week, Time Zone
+  1. Edit config.json (see the annotated example written alongside this
+     script, or below in DEFAULT_CONFIG).
+  2. Name your three input files exactly what config.json expects (defaults
+     are visitor_home.tsv.gz, pathing.zip, cities.geojson) and place them in
+     the same folder as this script.
+  3. Run: python mobility_destination_analysis.py
 
-2. pathing.tsv (or a .zip containing it) -- your pathing export. This can be
-   left zipped: the script streams rows directly out of the archive in
-   chunks, filtering down to El Paso-based device IDs as it goes, so the
-   full multi-GB file is never fully extracted to disk or loaded into memory
-   at once. If your zip has more than one file inside it, set
-   PATHING_ZIP_MEMBER (near the top of the script) to the exact filename to
-   read. Expected columns (tab-separated), based on the sample you shared:
-     Polygon ID, Hashed Device ID, Lat of Observation Point,
-     Lon of Observation Point, Time before appearance in polygon,
-     Unix Timestamp of Observation Point, Local Date, Local Time of Day,
-     Local Day of Week, Local Timezone of Observation Point
+INPUT FILE FLEXIBILITY (no manual unzipping needed)
+------------------------------------------------------
+- visitor_home file: can be plain .tsv/.csv, or gzip-compressed (.tsv.gz /
+  .csv.gz), or a .zip containing exactly one such file. All are read
+  directly without you extracting anything.
+- pathing file: can be plain .tsv/.csv, gzip-compressed, or a .zip
+  containing ANY number of part-files (e.g. report_000.tsv,
+  report_001.tsv, ...) -- these are streamed one at a time, in chunks, and
+  filtered down to the flagged home-metro device IDs as they're read, so a
+  multi-GB pathing export never has to be extracted to disk or fully loaded
+  into memory at once.
+- cities geojson: plain .geojson/.json (not chunked -- these are small).
 
-3. Cities_Region__2025_.geojson -- the DFW metro municipalities polygon file
-   you uploaded. Keep the filename as-is, or change CITIES_GEOJSON below.
-
-NOTE ON THE DEVICE ID JOIN
----------------------------
-Your visitor-home file uses the column "Hashed Ubermedia Id" while the
-pathing file uses "Hashed Device ID". The script treats these as the same
-identifier and joins on it -- if your actual field names differ, edit the
-HOME_ID_COL / PATH_ID_COL constants below.
-
-NOTE ON AIRPORT POLYGON NAMES
--------------------------------
-You mentioned DFW Airport was split into several polygons by terminal. Edit
-the AIRPORT_NAME_MAP dictionary below so every raw Polygon ID string used in
-your pathing file for a DFW terminal maps to "DFW Airport". Do the same if
-Love Field or McKinney National were split into multiple polygons. Matching
-is substring-based and case-insensitive, so partial names work.
+CONFIG FIELDS (config.json)
+------------------------------
+  visitor_home_file      Path to the visitor-home export (see above for
+                          accepted formats).
+  pathing_file            Path to the pathing export (see above).
+  cities_geojson          Path to the municipality boundaries geojson.
+  origin_label             Human-readable name for the home metro, used in
+                          console output only (e.g. "Miami").
+  origin_metro_keywords    List of lowercase substrings matched against the
+                          home-metro column to flag "home" devices (e.g.
+                          ["miami"] matches "Miami, FL", "Miami-Dade, FL",
+                          etc.). Add more entries if your data labels the
+                          metro inconsistently.
+  home_id_col              Device-id column name in the visitor_home file.
+  path_id_col              Device-id column name in the pathing file. (The
+                          join uses these two columns even if their names
+                          differ across files.)
+  home_metro_col           Column in the visitor_home file holding the
+                          home/evening metro label.
+  path_polygon_col         Column in the pathing file holding the polygon
+                          name a ping belongs to.
+  path_time_before_col     Column with "time before appearance in polygon".
+  path_unix_col            Column with the Unix timestamp of each ping.
+  path_lat_col / path_lon_col   Lat/Lon columns in the pathing file.
+  path_local_date_col      Local-date column in the pathing file.
+  airport_name_map         Dict mapping a lowercase substring of a raw
+                          Polygon ID to a normalized airport label. All
+                          terminal-specific polygons for one airport should
+                          map to the same label (e.g. every terminal
+                          polygon at one airport -> the same airport name).
+                          Matching is case-insensitive substring matching.
+  city_name_field          Property name in the geojson holding each
+                          municipality's display name.
+  window_hours             Hours after airport arrival to look for
+                          destination pings (default 24).
+  min_dwell_hours          Minimum time span (in hours) a device must be
+                          observed within a destination city -- measured as
+                          the gap between its first and last matched ping
+                          there -- for that visit to count as a genuine
+                          destination stay rather than pass-through traffic
+                          (e.g. still at/near the airport itself). Default
+                          2. A device with only ONE ping in a city has no
+                          measurable span (dwell = 0) and will always be
+                          dropped by any nonzero threshold -- this trades
+                          away some real-but-under-sampled visits in
+                          exchange for excluding unverifiable single-ping
+                          ones. Set to 0 to disable and keep every matched
+                          ping exactly as before.
+  pathing_zip_member       Optional: exact filename to read if a zip has
+                          more than one candidate file and auto-detection
+                          isn't reliable. Usually leave as null.
 
 DEPENDENCIES
 ------------
-Only pandas and shapely are required (no geopandas needed):
     pip install pandas shapely
 
 USAGE
 -----
-    python dfw_mobility_analysis.py
-    python dfw_mobility_analysis.py --airport "DFW Airport"
-    python dfw_mobility_analysis.py --airport "Dallas Love Field"
-    python dfw_mobility_analysis.py --airport "McKinney National"
-    python dfw_mobility_analysis.py --window-hours 24
+    python mobility_destination_analysis.py
+    python mobility_destination_analysis.py --config miami_config.json
+    python mobility_destination_analysis.py --airport "<one of your airport_name_map values>"
+    python mobility_destination_analysis.py --window-hours 24
 
-Output: dfw_destination_summary.csv (aggregated counts by municipality),
-        dfw_destination_detail.csv (one row per deduped device-visit).
+Output: <origin_label>_destination_summary.csv, <origin_label>_destination_detail.csv
 """
 
 import argparse
 import json
+import zipfile
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from shapely.geometry import Point, shape
 from shapely.strtree import STRtree
 
 # ---------------------------------------------------------------------------
-# CONFIG -- edit these to match your actual field names / file locations
+# DEFAULT CONFIG -- used only if config.json doesn't exist yet. Running the
+# script once with no config.json will write this out for you to edit.
 # ---------------------------------------------------------------------------
-
-VISITOR_HOME_FILE = "visitor_home.tsv"
-PATHING_FILE = "10144294_Dallas_Airports_pathing_x_report.zip"
-# If your zip file's internal member is not a single .tsv (or is named
-# something unexpected), set this to the exact filename inside the zip.
-# Leave as None to auto-detect -- this works both when the zip has exactly
-# one member, AND when it has multiple part-files (e.g. report_000.tsv,
-# report_001.tsv, ...), in which case they'll all be read in sorted order.
-PATHING_ZIP_MEMBER = None
-CITIES_GEOJSON = "Cities_Region__2025_.geojson"
-
-HOME_ID_COL = "Hashed Ubermedia Id"      # device id column in visitor_home.tsv
-PATH_ID_COL = "Hashed Device ID"          # device id column in pathing.tsv
-
-HOME_METRO_COL = "Common Evening Metro"   # e.g. "El Paso, TX"
-HOME_STATE_COL = "Common Evening State"   # e.g. "TX"
-
-# Strings that identify "home = El Paso" in the visitor-home file. Matching is
-# case-insensitive substring matching against HOME_METRO_COL (falls back to
-# checking postal/state if metro is blank). Add variants if your metro field
-# is labeled differently (e.g. "El Paso-Las Cruces").
-EL_PASO_METRO_KEYWORDS = ["el paso"]
-
-PATH_POLY_COL = "Polygon ID"
-PATH_TIME_BEFORE_COL = "Time before appearance in polygon"
-PATH_UNIX_COL = "Unix Timestamp of Observation Point"
-PATH_LAT_COL = "Lat of Observation Point"
-PATH_LON_COL = "Lon of Observation Point"
-PATH_LOCAL_DATE_COL = "Local Date"
-
-# Map raw Polygon ID strings (as they appear in pathing.tsv) to a normalized
-# airport label. Matching is case-insensitive substring matching, so you only
-# need to supply a distinguishing fragment of each polygon's name -- e.g. if
-# your terminal polygons are named "DFW Airport - Terminal A", "DFW Airport -
-# Terminal B", etc., the single entry "dfw" below will catch all of them.
-AIRPORT_NAME_MAP = {
-    "dfw": "DFW Airport",
-    "dallas/fort worth": "DFW Airport",
-    "dallas fort worth": "DFW Airport",
-    "love field": "Dallas Love Field",
-    "dal ": "Dallas Love Field",
-    "mckinney": "McKinney National",
-    "tki": "McKinney National",
+DEFAULT_CONFIG = {
+    "visitor_home_file": "visitor_home.tsv.gz",
+    "pathing_file": "pathing.zip",
+    "cities_geojson": "cities.geojson",
+    "origin_label": "REPLACE_WITH_ORIGIN_METRO_NAME",
+    "origin_metro_keywords": ["replace with lowercase metro keyword(s)"],
+    "home_id_col": "Hashed Ubermedia Id",
+    "path_id_col": "Hashed Device ID",
+    "home_metro_col": "Common Evening Metro",
+    "path_polygon_col": "Polygon ID",
+    "path_time_before_col": "Time before appearance in polygon",
+    "path_unix_col": "Unix Timestamp of Observation Point",
+    "path_lat_col": "Lat of Observation Point",
+    "path_lon_col": "Lon of Observation Point",
+    "path_local_date_col": "Local Date",
+    "airport_name_map": {
+        "REPLACE_WITH_RAW_POLYGON_ID_FRAGMENT_1": "REPLACE_WITH_NORMALIZED_AIRPORT_NAME_1",
+        "REPLACE_WITH_RAW_POLYGON_ID_FRAGMENT_2": "REPLACE_WITH_NORMALIZED_AIRPORT_NAME_2"
+    },
+    "city_name_field": "CITY",
+    "window_hours": 24,
+    "min_dwell_hours": 2,
+    "pathing_zip_member": None,
 }
 
-CITY_NAME_FIELD = "CITY"  # property name in the geojson holding city name
-
-DEFAULT_WINDOW_HOURS = 24
+CONFIG_PATH = "config.json"
 
 # ---------------------------------------------------------------------------
 
 
-def normalize_airport(raw_polygon_id: str):
-    """Return the normalized airport label for a raw Polygon ID, or None."""
+def load_config(path: str) -> dict:
+    p = Path(path)
+    if not p.exists():
+        print(f"[config] {path} not found -- writing a starter config template "
+              f"with placeholder values. Fill in your metro, airports, and file "
+              f"names, then re-run.")
+        with open(p, "w") as f:
+            json.dump(DEFAULT_CONFIG, f, indent=2)
+        raise SystemExit(f"Wrote {path}. Edit it, add your input files, and re-run.")
+
+    with open(p) as f:
+        cfg = json.load(f)
+    merged = {**DEFAULT_CONFIG, **cfg}
+    return merged
+
+
+def normalize_airport(raw_polygon_id, airport_name_map: dict):
     if not isinstance(raw_polygon_id, str):
         return None
     low = raw_polygon_id.lower()
-    for fragment, label in AIRPORT_NAME_MAP.items():
-        if fragment in low:
+    for fragment, label in airport_name_map.items():
+        if fragment.lower() in low:
             return label
     return None
 
 
-def load_el_paso_device_ids(path: str) -> set:
-    df = pd.read_csv(path, sep="\t", dtype=str, low_memory=False)
-    if HOME_ID_COL not in df.columns:
+def _zip_members(zf: zipfile.ZipFile, forced_member: Optional[str]):
+    members = [n for n in zf.namelist() if not n.endswith("/")]
+    if forced_member:
+        if forced_member not in members:
+            raise ValueError(
+                f"pathing_zip_member='{forced_member}' not found in archive. "
+                f"Members present: {members}"
+            )
+        return [forced_member]
+    return sorted(members)
+
+
+def _read_any(path: str, forced_zip_member: Optional[str] = None, chunksize: Optional[int] = None):
+    """Read a plain file, a .gz file, or a .zip (single or multi-member)
+    directly -- pandas infers gzip compression from the extension
+    automatically; zips are handled explicitly since they may contain
+    multiple part-files."""
+    lower = str(path).lower()
+    if lower.endswith(".zip"):
+        zf = zipfile.ZipFile(path)
+        members = _zip_members(zf, forced_zip_member)
+        if chunksize:
+            def gen():
+                for member_name in members:
+                    print(f"  ...reading archive member: {member_name}")
+                    fh = zf.open(member_name, "r")
+                    for chunk in pd.read_csv(fh, sep="\t", dtype=str, chunksize=chunksize):
+                        yield chunk
+            return gen()
+        else:
+            frames = []
+            for member_name in members:
+                fh = zf.open(member_name, "r")
+                frames.append(pd.read_csv(fh, sep="\t", dtype=str))
+            return pd.concat(frames, ignore_index=True) if len(frames) > 1 else frames[0]
+    else:
+        # plain .tsv/.csv or .gz/.bz2 -- pandas infers compression from suffix
+        if chunksize:
+            return pd.read_csv(path, sep="\t", dtype=str, chunksize=chunksize, compression="infer")
+        return pd.read_csv(path, sep="\t", dtype=str, compression="infer")
+
+
+def load_origin_device_ids(cfg: dict) -> set:
+    df = _read_any(cfg["visitor_home_file"])
+    home_id_col = cfg["home_id_col"]
+    home_metro_col = cfg["home_metro_col"]
+    keywords = [k.lower() for k in cfg["origin_metro_keywords"]]
+
+    if home_id_col not in df.columns:
         raise ValueError(
-            f"Column '{HOME_ID_COL}' not found in {path}. "
+            f"Column '{home_id_col}' not found in {cfg['visitor_home_file']}. "
             f"Available columns: {list(df.columns)}"
         )
 
-    def is_el_paso(row) -> bool:
-        metro = str(row.get(HOME_METRO_COL, "") or "").lower()
-        if any(kw in metro for kw in EL_PASO_METRO_KEYWORDS):
-            return True
-        return False
-
-    mask = df.apply(is_el_paso, axis=1)
-    el_paso_ids = set(df.loc[mask, HOME_ID_COL].dropna().unique())
-    print(f"[visitor_home] {len(df)} rows loaded; "
-          f"{len(el_paso_ids)} unique El Paso-based device IDs flagged.")
-    return el_paso_ids
+    metro_lower = df.get(home_metro_col, pd.Series([""] * len(df))).fillna("").str.lower()
+    mask = metro_lower.apply(lambda m: any(kw in m for kw in keywords))
+    origin_ids = set(df.loc[mask, home_id_col].dropna().unique())
+    print(f"[visitor_home] {len(df):,} rows loaded; "
+          f"{len(origin_ids):,} unique {cfg['origin_label']}-based device IDs flagged.")
+    return origin_ids
 
 
-def _open_pathing_stream(path: str, chunksize: int):
-    """Return an iterator of DataFrame chunks over the pathing file, reading
-    directly out of a .zip archive (without extracting it to disk) if `path`
-    ends in .zip, or from a plain .tsv/.csv otherwise. Zips containing
-    multiple part-files (e.g. report_000.tsv, report_001.tsv, ...) are
-    streamed one member at a time, in order."""
-    if str(path).lower().endswith(".zip"):
-        import zipfile
+def load_pathing(cfg: dict, device_ids: set, chunksize: int = 1_000_000) -> pd.DataFrame:
+    path_id_col = cfg["path_id_col"]
+    path_unix_col = cfg["path_unix_col"]
+    path_lat_col = cfg["path_lat_col"]
+    path_lon_col = cfg["path_lon_col"]
+    path_time_before_col = cfg["path_time_before_col"]
+    path_poly_col = cfg["path_polygon_col"]
 
-        zf = zipfile.ZipFile(path)
-        members = [
-            n for n in zf.namelist() if not n.endswith("/")  # skip directory entries
-        ]
-        if PATHING_ZIP_MEMBER:
-            if PATHING_ZIP_MEMBER not in members:
-                raise ValueError(
-                    f"PATHING_ZIP_MEMBER='{PATHING_ZIP_MEMBER}' not found in {path}. "
-                    f"Members present: {members}"
-                )
-            members_to_read = [PATHING_ZIP_MEMBER]
-        else:
-            members_to_read = sorted(members)
-
-        def gen():
-            header_cols = None
-            for member_name in members_to_read:
-                print(f"  ...reading archive member: {member_name}")
-                fh = zf.open(member_name, "r")
-                reader = pd.read_csv(fh, sep="\t", dtype=str, chunksize=chunksize)
-                for chunk in reader:
-                    if header_cols is None:
-                        header_cols = list(chunk.columns)
-                    yield chunk
-
-        return gen()
-    else:
-        return pd.read_csv(path, sep="\t", dtype=str, chunksize=chunksize)
-
-
-def load_pathing(path: str, device_ids: set, chunksize: int = 1_000_000) -> pd.DataFrame:
-    """Stream the (potentially huge / zipped) pathing file in chunks, keeping
-    only rows for El Paso-based device IDs, so the full multi-GB file never
-    has to sit in memory or get extracted to disk at once."""
     kept_chunks = []
     total_rows = 0
-    reader = _open_pathing_stream(path, chunksize)
+    reader = _read_any(cfg["pathing_file"], forced_zip_member=cfg.get("pathing_zip_member"), chunksize=chunksize)
 
     for i, chunk in enumerate(reader):
-        if i == 0 and PATH_ID_COL not in chunk.columns:
+        if i == 0 and path_id_col not in chunk.columns:
             raise ValueError(
-                f"Column '{PATH_ID_COL}' not found in {path}. "
+                f"Column '{path_id_col}' not found in {cfg['pathing_file']}. "
                 f"Available columns: {list(chunk.columns)}"
             )
         total_rows += len(chunk)
-        filtered = chunk[chunk[PATH_ID_COL].isin(device_ids)]
+        filtered = chunk[chunk[path_id_col].isin(device_ids)]
         if not filtered.empty:
             kept_chunks.append(filtered)
         if (i + 1) % 10 == 0:
             kept_so_far = sum(len(c) for c in kept_chunks)
-            print(f"  ...scanned {total_rows:,} pathing rows so far, "
-                  f"{kept_so_far:,} kept.")
+            print(f"  ...scanned {total_rows:,} pathing rows so far, {kept_so_far:,} kept.")
 
-    df = (
-        pd.concat(kept_chunks, ignore_index=True)
-        if kept_chunks
-        else pd.DataFrame(columns=[PATH_ID_COL])
-    )
+    df = pd.concat(kept_chunks, ignore_index=True) if kept_chunks else pd.DataFrame(columns=[path_id_col])
     print(f"[pathing] {total_rows:,} rows scanned; {len(df):,} rows remain after "
-          f"restricting to El Paso-based device IDs.")
+          f"restricting to {cfg['origin_label']}-based device IDs.")
 
     if df.empty:
         return df
 
-    # numeric coercion
-    df[PATH_UNIX_COL] = pd.to_numeric(df[PATH_UNIX_COL], errors="coerce")
-    df[PATH_LAT_COL] = pd.to_numeric(df[PATH_LAT_COL], errors="coerce")
-    df[PATH_LON_COL] = pd.to_numeric(df[PATH_LON_COL], errors="coerce")
-    df[PATH_TIME_BEFORE_COL] = pd.to_numeric(df[PATH_TIME_BEFORE_COL], errors="coerce")
-    df = df.dropna(subset=[PATH_UNIX_COL, PATH_LAT_COL, PATH_LON_COL])
+    df[path_unix_col] = pd.to_numeric(df[path_unix_col], errors="coerce")
+    df[path_lat_col] = pd.to_numeric(df[path_lat_col], errors="coerce")
+    df[path_lon_col] = pd.to_numeric(df[path_lon_col], errors="coerce")
+    df[path_time_before_col] = pd.to_numeric(df[path_time_before_col], errors="coerce")
+    df = df.dropna(subset=[path_unix_col, path_lat_col, path_lon_col])
 
-    df["airport_label"] = df[PATH_POLY_COL].apply(normalize_airport)
+    df["airport_label"] = df[path_poly_col].apply(lambda x: normalize_airport(x, cfg["airport_name_map"]))
     return df
 
 
-def load_city_polygons(path: str):
+def load_city_polygons(path: str, city_name_field: str):
     with open(path, "r") as f:
         gj = json.load(f)
     geoms, names = [], []
@@ -267,7 +281,7 @@ def load_city_polygons(path: str):
             geom = shape(feat["geometry"])
         except Exception:
             continue
-        name = feat["properties"].get(CITY_NAME_FIELD, "Unknown")
+        name = feat["properties"].get(city_name_field, "Unknown")
         geoms.append(geom)
         names.append(name)
     tree = STRtree(geoms)
@@ -276,157 +290,174 @@ def load_city_polygons(path: str):
 
 
 def find_municipality(tree, geoms, names, lat, lon):
-    """Point-in-polygon lookup. Works with shapely >=2.0, where
-    STRtree.query() returns integer indices into the array passed to the
-    tree's constructor."""
-    pt = Point(lon, lat)  # shapely uses (x=lon, y=lat)
-    candidate_idx = tree.query(pt)
-    for idx in candidate_idx:
+    pt = Point(lon, lat)
+    for idx in tree.query(pt):
         geom = geoms[int(idx)]
         if geom.contains(pt):
             return names[int(idx)]
     return None
 
 
-def find_airport_arrivals(path_df: pd.DataFrame) -> pd.DataFrame:
-    """One row per device per airport arrival event (the ping marking arrival,
-    i.e. Time before appearance in polygon == 0, or the min abs value as a
-    fallback if an exact 0 isn't present for that visit)."""
+def find_airport_arrivals(path_df: pd.DataFrame, cfg: dict) -> pd.DataFrame:
+    path_id_col = cfg["path_id_col"]
+    path_unix_col = cfg["path_unix_col"]
+    path_time_before_col = cfg["path_time_before_col"]
+
     arrivals = path_df[path_df["airport_label"].notna()].copy()
     if arrivals.empty:
         return arrivals
 
-    arrivals["abs_time_before"] = arrivals[PATH_TIME_BEFORE_COL].abs()
-    arrivals = arrivals.sort_values(
-        [PATH_ID_COL, "airport_label", "abs_time_before"]
-    )
-    # keep the ping closest to 0 (the actual arrival moment) per
-    # device + airport + "trip" -- we approximate one trip per calendar date
-    # of arrival to allow repeat trips over the dataset's time range.
-    arrivals["arrival_date"] = pd.to_datetime(
-        arrivals[PATH_UNIX_COL], unit="s", utc=True
-    ).dt.date
+    arrivals["abs_time_before"] = arrivals[path_time_before_col].abs()
+    arrivals = arrivals.sort_values([path_id_col, "airport_label", "abs_time_before"])
+    arrivals["arrival_date"] = pd.to_datetime(arrivals[path_unix_col], unit="s", utc=True).dt.date
 
-    dedup = arrivals.drop_duplicates(
-        subset=[PATH_ID_COL, "airport_label", "arrival_date"], keep="first"
-    )
-    return dedup[[PATH_ID_COL, "airport_label", PATH_UNIX_COL, "arrival_date"]].rename(
-        columns={PATH_UNIX_COL: "arrival_unix_ts"}
+    dedup = arrivals.drop_duplicates(subset=[path_id_col, "airport_label", "arrival_date"], keep="first")
+    return dedup[[path_id_col, "airport_label", path_unix_col, "arrival_date"]].rename(
+        columns={path_unix_col: "arrival_unix_ts"}
     )
 
 
-def build_destination_detail(
-    path_df: pd.DataFrame, arrivals: pd.DataFrame, tree, geoms, names, window_hours: float
-) -> pd.DataFrame:
+def build_destination_detail(path_df, arrivals, tree, geoms, names, cfg, window_hours):
+    path_id_col = cfg["path_id_col"]
+    path_unix_col = cfg["path_unix_col"]
+    path_lat_col = cfg["path_lat_col"]
+    path_lon_col = cfg["path_lon_col"]
+    path_local_date_col = cfg["path_local_date_col"]
+
     window_secs = window_hours * 3600
     results = []
-
-    # group pathing pings by device for fast lookup
-    pings_by_device = {
-        dev: g for dev, g in path_df.groupby(PATH_ID_COL)
-    }
+    pings_by_device = {dev: g for dev, g in path_df.groupby(path_id_col)}
 
     for _, arr in arrivals.iterrows():
-        dev = arr[PATH_ID_COL]
+        dev = arr[path_id_col]
         airport = arr["airport_label"]
         arr_ts = arr["arrival_unix_ts"]
         window_df = pings_by_device.get(dev)
         if window_df is None:
             continue
         in_window = window_df[
-            (window_df[PATH_UNIX_COL] > arr_ts)
-            & (window_df[PATH_UNIX_COL] <= arr_ts + window_secs)
+            (window_df[path_unix_col] > arr_ts) & (window_df[path_unix_col] <= arr_ts + window_secs)
         ]
         for _, ping in in_window.iterrows():
-            city = find_municipality(
-                tree, geoms, names, ping[PATH_LAT_COL], ping[PATH_LON_COL]
-            )
+            city = find_municipality(tree, geoms, names, ping[path_lat_col], ping[path_lon_col])
             if city is None:
                 continue
-            results.append(
-                {
-                    PATH_ID_COL: dev,
-                    "origin_airport": airport,
-                    "arrival_unix_ts": arr_ts,
-                    "destination_city": city,
-                    "ping_unix_ts": ping[PATH_UNIX_COL],
-                    "local_date": ping.get(PATH_LOCAL_DATE_COL),
-                }
-            )
+            results.append({
+                path_id_col: dev,
+                "origin_airport": airport,
+                "arrival_unix_ts": arr_ts,
+                "destination_city": city,
+                "ping_unix_ts": ping[path_unix_col],
+                "local_date": ping.get(path_local_date_col),
+            })
 
     detail = pd.DataFrame(results)
     if detail.empty:
         return detail
 
-    # de-duplicate: same device + same destination city + same local date
-    # (or same arrival event if local_date missing) counts once
-    dedup_cols = [PATH_ID_COL, "origin_airport", "destination_city", "local_date"]
-    detail = detail.sort_values("ping_unix_ts").drop_duplicates(
-        subset=dedup_cols, keep="first"
+    dedup_cols = [path_id_col, "origin_airport", "destination_city", "local_date"]
+
+    # Compute dwell (span between first and last observed ping) per
+    # device/airport/city/date group BEFORE collapsing to one row -- this is
+    # what lets us tell a genuine stay apart from a single momentary ping
+    # while just passing through (e.g. still at/near the airport itself).
+    # Note: a group with only one ping has dwell_seconds == 0 by construction,
+    # since there's no second ping to measure a span against -- these are
+    # exactly the rows a nonzero min_dwell_hours threshold will drop.
+    dwell_stats = (
+        detail.groupby(dedup_cols)["ping_unix_ts"]
+        .agg(dwell_first_ping_ts="min", dwell_last_ping_ts="max", ping_count="count")
+        .reset_index()
     )
+    dwell_stats["dwell_seconds"] = dwell_stats["dwell_last_ping_ts"] - dwell_stats["dwell_first_ping_ts"]
+
+    detail = detail.sort_values("ping_unix_ts").drop_duplicates(subset=dedup_cols, keep="first")
+    detail = detail.merge(dwell_stats, on=dedup_cols, how="left")
+
+    min_dwell_hours = cfg.get("min_dwell_hours", 0) or 0
+    min_dwell_seconds = min_dwell_hours * 3600
+    if min_dwell_seconds > 0:
+        before = len(detail)
+        detail = detail[detail["dwell_seconds"] >= min_dwell_seconds].copy()
+        after = len(detail)
+        print(f"[dwell filter] min_dwell_hours={min_dwell_hours}: dropped {before - after:,} of "
+              f"{before:,} visit rows with dwell under {min_dwell_hours}h (likely pass-through "
+              f"pings, e.g. still at/near the airport itself, rather than a genuine destination stay).")
+
     return detail
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "--airport",
-        choices=["DFW Airport", "Dallas Love Field", "McKinney National", "All"],
-        default="All",
-        help="Restrict analysis to a single origin airport (default: All).",
-    )
-    parser.add_argument(
-        "--window-hours",
-        type=float,
-        default=DEFAULT_WINDOW_HOURS,
-        help="Hours after airport arrival to look for destination pings (default: 24).",
-    )
-    parser.add_argument(
-        "--visitor-home", default=VISITOR_HOME_FILE, help="Path to visitor_home.tsv"
-    )
-    parser.add_argument("--pathing", default=PATHING_FILE,
-                         help="Path to the pathing file (.tsv, .csv, or .zip containing one such file)")
-    parser.add_argument(
-        "--chunksize", type=int, default=1_000_000,
-        help="Rows per chunk when streaming the pathing file (default: 1,000,000). "
-             "Lower this if you run low on memory.",
-    )
-    parser.add_argument(
-        "--cities", default=CITIES_GEOJSON, help="Path to the DFW cities geojson"
-    )
+    parser.add_argument("--config", default=CONFIG_PATH, help="Path to config.json")
+    parser.add_argument("--airport", default="All", help="Restrict to a single origin airport label from your airport_name_map (default: All).")
+    parser.add_argument("--window-hours", type=float, default=None, help="Override config's window_hours.")
+    parser.add_argument("--chunksize", type=int, default=1_000_000, help="Rows per chunk when streaming pathing data.")
     args = parser.parse_args()
 
-    for f in [args.visitor_home, args.pathing, args.cities]:
-        if not Path(f).exists():
-            raise SystemExit(f"Required input file not found: {f}")
+    cfg = load_config(args.config)
 
-    el_paso_ids = load_el_paso_device_ids(args.visitor_home)
-    if not el_paso_ids:
-        raise SystemExit("No El Paso-based device IDs found -- check "
-                          "HOME_METRO_COL / EL_PASO_METRO_KEYWORDS in the config.")
+    placeholder_markers = ("REPLACE_WITH",)
+    def has_placeholder(v):
+        if isinstance(v, str):
+            return any(m in v for m in placeholder_markers)
+        if isinstance(v, list):
+            return any(has_placeholder(x) for x in v)
+        if isinstance(v, dict):
+            return any(has_placeholder(k) or has_placeholder(x) for k, x in v.items())
+        return False
 
-    path_df = load_pathing(args.pathing, el_paso_ids, chunksize=args.chunksize)
-    tree, geoms, names = load_city_polygons(args.cities)
+    if has_placeholder(cfg.get("origin_label")) or has_placeholder(cfg.get("origin_metro_keywords")) \
+            or has_placeholder(cfg.get("airport_name_map")):
+        raise SystemExit(
+            f"{args.config} still has placeholder values (origin_label, "
+            f"origin_metro_keywords, and/or airport_name_map). Edit it with your "
+            f"actual metro name, home-metro keyword(s), and airport polygon "
+            f"mappings, then re-run."
+        )
 
-    arrivals = find_airport_arrivals(path_df)
-    print(f"[arrivals] {len(arrivals)} distinct device/airport/date arrival events found.")
+    window_hours = args.window_hours if args.window_hours is not None else cfg["window_hours"]
+
+    for key in ["visitor_home_file", "pathing_file", "cities_geojson"]:
+        if not Path(cfg[key]).exists():
+            raise SystemExit(f"Required input file not found: {cfg[key]} (config key: {key})")
+
+    origin_ids = load_origin_device_ids(cfg)
+    if not origin_ids:
+        raise SystemExit(f"No {cfg['origin_label']}-based device IDs found -- check "
+                          f"home_metro_col / origin_metro_keywords in {args.config}.")
+
+    path_df = load_pathing(cfg, origin_ids, chunksize=args.chunksize)
+    tree, geoms, names = load_city_polygons(cfg["cities_geojson"], cfg["city_name_field"])
+
+    arrivals = find_airport_arrivals(path_df, cfg)
+    print(f"[arrivals] {len(arrivals):,} distinct device/airport/date arrival events found.")
     if arrivals.empty:
-        raise SystemExit("No airport arrival events matched AIRPORT_NAME_MAP -- "
+        raise SystemExit("No airport arrival events matched airport_name_map -- "
                           "check that map against your actual Polygon ID values.")
 
     if args.airport != "All":
         arrivals = arrivals[arrivals["airport_label"] == args.airport]
-        print(f"[filter] {len(arrivals)} arrival events remain for airport = {args.airport}")
+        print(f"[filter] {len(arrivals):,} arrival events remain for airport = {args.airport}")
 
-    detail = build_destination_detail(
-        path_df, arrivals, tree, geoms, names, args.window_hours
-    )
+    slug = cfg["origin_label"].lower().replace(" ", "_")
+
+    # Written BEFORE the destination-detail step, and independent of whether a
+    # given arrival went on to produce a matched neighborhood ping -- this is
+    # the correct denominator for normalizing against ground-truth passenger
+    # counts (see normalize_visits.py), since some arrivals never generate a
+    # captured destination ping at all.
+    arrivals_path = f"{slug}_airport_arrivals.csv"
+    arrivals.to_csv(arrivals_path, index=False)
+    print(f"Wrote {arrivals_path} ({len(arrivals):,} rows)")
+
+    detail = build_destination_detail(path_df, arrivals, tree, geoms, names, cfg, window_hours)
 
     if detail.empty:
         print("No destination pings found within the window for the selected airport(s).")
         return
 
-    detail_path = "dfw_destination_detail.csv"
+    detail_path = f"{slug}_destination_detail.csv"
     detail.to_csv(detail_path, index=False)
 
     summary = (
@@ -435,11 +466,11 @@ def main():
         .reset_index(name="unique_device_visits")
         .sort_values(["origin_airport", "unique_device_visits"], ascending=[True, False])
     )
-    summary_path = "dfw_destination_summary.csv"
+    summary_path = f"{slug}_destination_summary.csv"
     summary.to_csv(summary_path, index=False)
 
-    print(f"\nWrote {detail_path} ({len(detail)} rows)")
-    print(f"Wrote {summary_path} ({len(summary)} rows)\n")
+    print(f"\nWrote {detail_path} ({len(detail):,} rows)")
+    print(f"Wrote {summary_path} ({len(summary):,} rows)\n")
     print(summary.to_string(index=False))
 
 
