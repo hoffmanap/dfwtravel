@@ -1,0 +1,178 @@
+origin_airport,destination_city,unique_device_visits
+DFW Airport,Grapevine,1342
+DFW Airport,Fort Worth,202
+DFW Airport,Dallas,174
+DFW Airport,Arlington,145
+DFW Airport,Irving,139
+DFW Airport,Euless,90
+DFW Airport,Grand Prairie,90
+DFW Airport,Plano,51
+DFW Airport,Bedford,35
+DFW Airport,Frisco,33
+DFW Airport,North Richland Hills,33
+DFW Airport,Lewisville,27
+DFW Airport,McKinney,27
+DFW Airport,Carrollton,18
+DFW Airport,Flower Mound,18
+DFW Airport,Mansfield,17
+DFW Airport,Coppell,16
+DFW Airport,Hurst,16
+DFW Airport,Garland,14
+DFW Airport,Denton,12
+DFW Airport,Allen,11
+DFW Airport,Haltom City,11
+DFW Airport,Keller,11
+DFW Airport,Burleson,9
+DFW Airport,Southlake,9
+DFW Airport,Midlothian,8
+DFW Airport,Addison,7
+DFW Airport,Highland Village,6
+DFW Airport,Mesquite,6
+DFW Airport,Richardson,6
+DFW Airport,Colleyville,5
+DFW Airport,Farmers Branch,5
+DFW Airport,Lantana,5
+DFW Airport,Rockwall,5
+DFW Airport,Watauga,5
+DFW Airport,Cedar Hill,4
+DFW Airport,Corinth,4
+DFW Airport,Dalworthington Gardens,4
+DFW Airport,McLendon-Chisholm,4
+DFW Airport,Wylie,4
+DFW Airport,Argyle,3
+DFW Airport,Azle,3
+DFW Airport,Bartonville,3
+DFW Airport,DeSoto,3
+DFW Airport,Duncanville,3
+DFW Airport,Lancaster,3
+DFW Airport,Melissa,3
+DFW Airport,Northlake,3
+DFW Airport,Rendon,3
+DFW Airport,Rowlett,3
+DFW Airport,The Colony,3
+DFW Airport,Weatherford,3
+DFW Airport,Alvord,2
+DFW Airport,Aubrey,2
+DFW Airport,Benbrook,2
+DFW Airport,Cleburne,2
+DFW Airport,Decatur,2
+DFW Airport,Fate,2
+DFW Airport,Forest Hill,2
+DFW Airport,Forney,2
+DFW Airport,Godley,2
+DFW Airport,Greenville,2
+DFW Airport,Heath,2
+DFW Airport,Highland Park,2
+DFW Airport,Hutchins,2
+DFW Airport,Lake Worth,2
+DFW Airport,Mineral Wells,2
+DFW Airport,Murphy,2
+DFW Airport,Princeton,2
+DFW Airport,Terrell,2
+DFW Airport,University Park,2
+DFW Airport,Waxahachie,2
+DFW Airport,Westlake,2
+DFW Airport,Alvarado,1
+DFW Airport,Balch Springs,1
+DFW Airport,Campbell,1
+DFW Airport,Celina,1
+DFW Airport,Commerce,1
+DFW Airport,Corsicana,1
+DFW Airport,Fairview,1
+DFW Airport,Ferris,1
+DFW Airport,Granbury,1
+DFW Airport,Grandview,1
+DFW Airport,Hudson Oaks,1
+DFW Airport,Keene,1
+DFW Airport,Little Elm,1
+DFW Airport,Lucas,1
+DFW Airport,New Fairview,1
+DFW Airport,Pantego,1
+DFW Airport,Pecan Acres,1
+DFW Airport,Pecan Plantation,1
+DFW Airport,Prosper,1
+DFW Airport,Red Oak,1
+DFW Airport,Rhome,1
+DFW Airport,River Oaks,1
+DFW Airport,Sachse,1
+DFW Airport,Travis Ranch,1
+DFW Airport,Venus,1
+DFW Airport,Willow Park,1
+Dallas Love Field,Dallas,607
+Dallas Love Field,Arlington,63
+Dallas Love Field,Irving,62
+Dallas Love Field,Fort Worth,51
+Dallas Love Field,Plano,51
+Dallas Love Field,Grand Prairie,32
+Dallas Love Field,Frisco,31
+Dallas Love Field,Lewisville,31
+Dallas Love Field,Denton,25
+Dallas Love Field,Farmers Branch,25
+Dallas Love Field,Grapevine,24
+Dallas Love Field,Carrollton,20
+Dallas Love Field,Addison,18
+Dallas Love Field,Richardson,18
+Dallas Love Field,Corinth,16
+Dallas Love Field,Euless,15
+Dallas Love Field,The Colony,15
+Dallas Love Field,Nevada,14
+Dallas Love Field,Allen,13
+Dallas Love Field,Garland,13
+Dallas Love Field,McKinney,13
+Dallas Love Field,Mesquite,11
+Dallas Love Field,Little Elm,6
+Dallas Love Field,Hickory Creek,5
+Dallas Love Field,Mansfield,5
+Dallas Love Field,Celina,4
+Dallas Love Field,Duncanville,4
+Dallas Love Field,Heartland,4
+Dallas Love Field,Melissa,4
+Dallas Love Field,Prosper,4
+Dallas Love Field,Southlake,4
+Dallas Love Field,Waxahachie,4
+Dallas Love Field,Benbrook,3
+Dallas Love Field,Burleson,3
+Dallas Love Field,Colleyville,3
+Dallas Love Field,Flower Mound,3
+Dallas Love Field,Forest Hill,3
+Dallas Love Field,Forney,3
+Dallas Love Field,Granbury,3
+Dallas Love Field,Highland Village,3
+Dallas Love Field,Sachse,3
+Dallas Love Field,Sanger,3
+Dallas Love Field,Anna,2
+Dallas Love Field,Bedford,2
+Dallas Love Field,Cedar Hill,2
+Dallas Love Field,Coppell,2
+Dallas Love Field,Corsicana,2
+Dallas Love Field,Dalworthington Gardens,2
+Dallas Love Field,Hurst,2
+Dallas Love Field,Lantana,2
+Dallas Love Field,Lucas,2
+Dallas Love Field,Midlothian,2
+Dallas Love Field,Murphy,2
+Dallas Love Field,Rockwall,2
+Dallas Love Field,Alma,1
+Dallas Love Field,Alvarado,1
+Dallas Love Field,Cresson,1
+Dallas Love Field,Crowley,1
+Dallas Love Field,Ennis,1
+Dallas Love Field,Fate,1
+Dallas Love Field,Garrett,1
+Dallas Love Field,Glenn Heights,1
+Dallas Love Field,Hutchins,1
+Dallas Love Field,Keller,1
+Dallas Love Field,Kennedale,1
+Dallas Love Field,Lancaster,1
+Dallas Love Field,Millsap,1
+Dallas Love Field,Mineral Wells,1
+Dallas Love Field,North Richland Hills,1
+Dallas Love Field,Palmer,1
+Dallas Love Field,Red Oak,1
+Dallas Love Field,Rice,1
+Dallas Love Field,Rowlett,1
+Dallas Love Field,Seagoville,1
+Dallas Love Field,University Park,1
+Dallas Love Field,West Tawakoni,1
+Dallas Love Field,Westworth Village,1
+Dallas Love Field,Wilmer,1

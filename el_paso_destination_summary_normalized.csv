@@ -1,0 +1,178 @@
+origin_airport,destination_city,unique_device_visits,estimated_true_visits,rows_using_fallback_factor
+DFW Airport,Grapevine,1342,6661.9,112
+DFW Airport,Fort Worth,202,981.2,8
+DFW Airport,Dallas,174,791.0,11
+DFW Airport,Arlington,145,675.4,12
+DFW Airport,Irving,139,596.2,16
+DFW Airport,Grand Prairie,90,413.8,22
+DFW Airport,Euless,90,406.3,3
+DFW Airport,Plano,51,210.2,3
+DFW Airport,Bedford,35,174.0,0
+DFW Airport,North Richland Hills,33,146.3,0
+DFW Airport,Frisco,33,134.9,0
+DFW Airport,McKinney,27,127.8,2
+DFW Airport,Lewisville,27,106.3,2
+DFW Airport,Flower Mound,18,102.6,1
+DFW Airport,Carrollton,18,101.1,0
+DFW Airport,Mansfield,17,79.2,6
+DFW Airport,Garland,14,76.6,2
+DFW Airport,Keller,11,75.8,1
+DFW Airport,Hurst,16,71.5,3
+DFW Airport,Burleson,9,68.4,0
+DFW Airport,Coppell,16,68.3,2
+DFW Airport,Southlake,9,57.5,0
+DFW Airport,Allen,11,50.9,0
+DFW Airport,Denton,12,48.6,3
+DFW Airport,Haltom City,11,44.0,0
+DFW Airport,Richardson,6,32.7,0
+DFW Airport,Addison,7,32.1,0
+DFW Airport,Farmers Branch,5,31.8,0
+DFW Airport,Highland Village,6,31.8,0
+DFW Airport,Colleyville,5,30.9,0
+DFW Airport,Mesquite,6,26.0,0
+DFW Airport,Northlake,3,25.5,1
+DFW Airport,Midlothian,8,25.2,0
+DFW Airport,Lantana,5,23.4,3
+DFW Airport,Cedar Hill,4,22.9,0
+DFW Airport,The Colony,3,19.9,0
+DFW Airport,Watauga,5,18.7,0
+DFW Airport,Corinth,4,16.5,0
+DFW Airport,Alvord,2,16.2,0
+DFW Airport,Duncanville,3,16.2,2
+DFW Airport,Rockwall,5,15.4,1
+DFW Airport,Dalworthington Gardens,4,14.6,0
+DFW Airport,Lancaster,3,14.4,0
+DFW Airport,Princeton,2,14.3,0
+DFW Airport,Melissa,3,14.2,0
+DFW Airport,Weatherford,3,14.0,0
+DFW Airport,Rowlett,3,13.2,0
+DFW Airport,Argyle,3,12.9,1
+DFW Airport,Campbell,1,12.8,0
+DFW Airport,Commerce,1,12.8,0
+DFW Airport,New Fairview,1,12.8,0
+DFW Airport,Pantego,1,12.8,0
+DFW Airport,Rhome,1,12.8,0
+DFW Airport,DeSoto,3,11.9,1
+DFW Airport,Westlake,2,11.9,0
+DFW Airport,Bartonville,3,11.6,1
+DFW Airport,Azle,3,11.0,0
+DFW Airport,Benbrook,2,11.0,0
+DFW Airport,Fate,2,11.0,1
+DFW Airport,Forest Hill,2,11.0,0
+DFW Airport,Wylie,4,11.0,0
+DFW Airport,Aubrey,2,10.5,0
+DFW Airport,McLendon-Chisholm,4,10.4,0
+DFW Airport,Rendon,3,10.2,0
+DFW Airport,Decatur,2,8.5,1
+DFW Airport,River Oaks,1,8.5,0
+DFW Airport,Cleburne,2,8.2,0
+DFW Airport,Highland Park,2,7.9,0
+DFW Airport,Murphy,2,7.9,0
+DFW Airport,University Park,2,7.9,0
+DFW Airport,Godley,2,7.3,0
+DFW Airport,Terrell,2,7.3,0
+DFW Airport,Greenville,2,6.9,0
+DFW Airport,Lake Worth,2,6.9,0
+DFW Airport,Forney,2,6.6,0
+DFW Airport,Balch Springs,1,5.9,0
+DFW Airport,Mineral Wells,2,5.8,0
+DFW Airport,Waxahachie,2,5.8,0
+DFW Airport,Celina,1,5.3,0
+DFW Airport,Hudson Oaks,1,5.3,0
+DFW Airport,Keene,1,5.3,0
+DFW Airport,Prosper,1,5.3,0
+DFW Airport,Willow Park,1,5.3,0
+DFW Airport,Heath,2,5.2,0
+DFW Airport,Hutchins,2,5.2,0
+DFW Airport,Corsicana,1,5.0,1
+DFW Airport,Pecan Acres,1,5.0,1
+DFW Airport,Travis Ranch,1,5.0,1
+DFW Airport,Granbury,1,3.7,0
+DFW Airport,Pecan Plantation,1,3.7,0
+DFW Airport,Sachse,1,3.4,0
+DFW Airport,Alvarado,1,2.9,0
+DFW Airport,Fairview,1,2.9,0
+DFW Airport,Grandview,1,2.9,0
+DFW Airport,Lucas,1,2.9,0
+DFW Airport,Red Oak,1,2.9,0
+DFW Airport,Venus,1,2.9,0
+DFW Airport,Ferris,1,2.6,0
+DFW Airport,Little Elm,1,2.6,0
+Dallas Love Field,Addison,18,,0
+Dallas Love Field,Allen,13,,0
+Dallas Love Field,Alma,1,,0
+Dallas Love Field,Alvarado,1,,0
+Dallas Love Field,Anna,2,,0
+Dallas Love Field,Arlington,63,,0
+Dallas Love Field,Bedford,2,,0
+Dallas Love Field,Benbrook,3,,0
+Dallas Love Field,Burleson,3,,0
+Dallas Love Field,Carrollton,20,,0
+Dallas Love Field,Cedar Hill,2,,0
+Dallas Love Field,Celina,4,,0
+Dallas Love Field,Colleyville,3,,0
+Dallas Love Field,Coppell,2,,0
+Dallas Love Field,Corinth,16,,0
+Dallas Love Field,Corsicana,2,,0
+Dallas Love Field,Cresson,1,,0
+Dallas Love Field,Crowley,1,,0
+Dallas Love Field,Dallas,607,,0
+Dallas Love Field,Dalworthington Gardens,2,,0
+Dallas Love Field,Denton,25,,0
+Dallas Love Field,Duncanville,4,,0
+Dallas Love Field,Ennis,1,,0
+Dallas Love Field,Euless,15,,0
+Dallas Love Field,Farmers Branch,25,,0
+Dallas Love Field,Fate,1,,0
+Dallas Love Field,Flower Mound,3,,0
+Dallas Love Field,Forest Hill,3,,0
+Dallas Love Field,Forney,3,,0
+Dallas Love Field,Fort Worth,51,,0
+Dallas Love Field,Frisco,31,,0
+Dallas Love Field,Garland,13,,0
+Dallas Love Field,Garrett,1,,0
+Dallas Love Field,Glenn Heights,1,,0
+Dallas Love Field,Granbury,3,,0
+Dallas Love Field,Grand Prairie,32,,0
+Dallas Love Field,Grapevine,24,,0
+Dallas Love Field,Heartland,4,,0
+Dallas Love Field,Hickory Creek,5,,0
+Dallas Love Field,Highland Village,3,,0
+Dallas Love Field,Hurst,2,,0
+Dallas Love Field,Hutchins,1,,0
+Dallas Love Field,Irving,62,,0
+Dallas Love Field,Keller,1,,0
+Dallas Love Field,Kennedale,1,,0
+Dallas Love Field,Lancaster,1,,0
+Dallas Love Field,Lantana,2,,0
+Dallas Love Field,Lewisville,31,,0
+Dallas Love Field,Little Elm,6,,0
+Dallas Love Field,Lucas,2,,0
+Dallas Love Field,Mansfield,5,,0
+Dallas Love Field,McKinney,13,,0
+Dallas Love Field,Melissa,4,,0
+Dallas Love Field,Mesquite,11,,0
+Dallas Love Field,Midlothian,2,,0
+Dallas Love Field,Millsap,1,,0
+Dallas Love Field,Mineral Wells,1,,0
+Dallas Love Field,Murphy,2,,0
+Dallas Love Field,Nevada,14,,0
+Dallas Love Field,North Richland Hills,1,,0
+Dallas Love Field,Palmer,1,,0
+Dallas Love Field,Plano,51,,0
+Dallas Love Field,Prosper,4,,0
+Dallas Love Field,Red Oak,1,,0
+Dallas Love Field,Rice,1,,0
+Dallas Love Field,Richardson,18,,0
+Dallas Love Field,Rockwall,2,,0
+Dallas Love Field,Rowlett,1,,0
+Dallas Love Field,Sachse,3,,0
+Dallas Love Field,Sanger,3,,0
+Dallas Love Field,Seagoville,1,,0
+Dallas Love Field,Southlake,4,,0
+Dallas Love Field,The Colony,15,,0
+Dallas Love Field,University Park,1,,0
+Dallas Love Field,Waxahachie,4,,0
+Dallas Love Field,West Tawakoni,1,,0
+Dallas Love Field,Westworth Village,1,,0
+Dallas Love Field,Wilmer,1,,0
